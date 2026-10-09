@@ -99,6 +99,12 @@ for (const file of ["src/main.ts", "src/live.ts", "src/output.ts", "src/place.ts
   if (/\.style\.[a-zA-Z]+\s*=[^=]/.test(source)) fail(`${file} assigns el.style.*; use classes or setCssProps`);
 }
 
+// Obsidian's review rejects bundles with hex-style identifiers as obfuscated. A dependency can
+// bring them in: the TypeScript compiler has `..._between_0x0_and_0x10FFFF_...`.
+if (existsSync(resolve(root, "main.js")) && /_0x[0-9a-fA-F]/.test(read("main.js"))) {
+  fail("main.js contains _0x identifiers, which the plugin review flags as obfuscation");
+}
+
 const readme = existsSync(resolve(root, "README.md")) ? read("README.md") : "";
 if (/\/Users\/|[A-Z]:\\Users\\/i.test(readme)) {
   fail("README.md contains a machine-specific absolute path");

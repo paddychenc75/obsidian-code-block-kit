@@ -64,6 +64,14 @@ test("formats every advertised language family", async () => {
   assert.equal(await formatCode("const a={b:1}", "js"), "const a = { b: 1 };");
   assert.equal(await formatCode("let a:number=1", "ts"), "let a: number = 1;");
   assert.equal(await formatCode("const a=<b>hi</b>", "tsx"), "const a = <b>hi</b>;");
+  assert.equal(
+    await formatCode("enum E{A=1}\nfunction f<T extends object>(x:T):x is T{return true}", "ts"),
+    "enum E {\n  A = 1,\n}\nfunction f<T extends object>(x: T): x is T {\n  return true;\n}",
+  );
+  assert.equal(
+    await formatCode('<script setup lang="ts">\nconst a:number=1\n</script>', "vue"),
+    '<script setup lang="ts">\nconst a: number = 1;\n</script>',
+  );
   assert.equal(await formatCode('{"a":1,\n"b":[1,2]}', "json"), '{ "a": 1, "b": [1, 2] }');
   assert.equal(await formatCode("a{color:red}", "css"), "a {\n  color: red;\n}");
   assert.equal(await formatCode("<div><p>hi</p></div>", "html"), "<div><p>hi</p></div>");

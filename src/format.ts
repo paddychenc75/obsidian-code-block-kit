@@ -5,7 +5,6 @@ type Load = () => Promise<unknown>;
 // Dynamic imports keep each parser unevaluated until a block in that language is formatted.
 const babel: Load = () => import("prettier/plugins/babel");
 const estree: Load = () => import("prettier/plugins/estree");
-const typescript: Load = () => import("prettier/plugins/typescript");
 const postcss: Load = () => import("prettier/plugins/postcss");
 const html: Load = () => import("prettier/plugins/html");
 const markdown: Load = () => import("prettier/plugins/markdown");
@@ -18,8 +17,15 @@ interface Target {
 }
 
 const script: Target = { parser: "babel", plugins: [babel, estree] };
-const typed: Target = { parser: "typescript", plugins: [typescript, estree] };
-const markup: Load[] = [html, babel, estree, postcss];
+// Babel parses TypeScript too, which saves bundling the TypeScript compiler: half the bundle,
+// and its diagnostic names (`..._between_0x0_and_0x10FFFF_...`) trip obfuscation scanners.
+const typed: Target = { parser: "babel-ts", plugins: [babel, estree] };
+// Vue and HTML ask for the "typescript" parser by name for `lang="ts"` scripts.
+const typescriptAlias: Load = async () => {
+  const { parsers } = await import("prettier/plugins/babel");
+  return { parsers: { typescript: parsers["babel-ts"] } };
+};
+const markup: Load[] = [html, babel, estree, postcss, typescriptAlias];
 
 const TARGETS: Record<string, Target> = {
   js: script,

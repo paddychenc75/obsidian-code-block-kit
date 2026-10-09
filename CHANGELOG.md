@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.1
+
+Changed
+
+- TypeScript and TSX are formatted with Babel's TypeScript parser instead of the TypeScript compiler. The bundle drops from 2.3 MB to 1.4 MB, and no longer contains the compiler's `..._between_0x0_and_0x10FFFF_...` diagnostic names, which the plugin review read as obfuscated code
+
 ## 0.1.0
 
 First release.
