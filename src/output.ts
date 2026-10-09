@@ -25,9 +25,6 @@ export class OutputPanel {
     const bar = this.el.createDiv({ cls: "cbk-output-bar" });
     this.status = bar.createSpan({ cls: "cbk-output-status", text: "Running…" });
     this.stop = this.button(bar, "square", "Stop", onStop);
-    this.button(bar, "copy", "Copy output", () => {
-      void navigator.clipboard.writeText(this.body.textContent ?? "");
-    });
     this.button(bar, "x", "Close", onClose);
     this.body = this.el.createDiv({ cls: "cbk-output-body" });
   }

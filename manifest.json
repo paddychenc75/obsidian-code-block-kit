@@ -1,7 +1,7 @@
 {
   "id": "code-block-kit",
   "name": "Code Block Kit",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "minAppVersion": "1.5.7",
   "description": "Format code blocks with one click and run Python, JavaScript, and TypeScript blocks in place. Formatting supports JavaScript, TypeScript, JSON, CSS, HTML, Vue, Markdown, YAML, and GraphQL.",
   "author": "paddychenc75",

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.4
+
+Removed
+
+- The copy button on the output panel, so the plugin no longer touches the clipboard. Select the output and copy it as usual
+
 ## 0.1.3
 
 Removed
