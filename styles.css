@@ -1,0 +1,95 @@
+/* The same button in Reading view and Live Preview. --cbk-end and --cbk-top are measured from
+   the copy button or language label the button sits beside. */
+.cbk-button.clickable-icon {
+  --icon-size: var(--icon-s);
+  position: absolute;
+  top: var(--cbk-top, 6px);
+  right: var(--cbk-end, 6px);
+  z-index: 1;
+  padding: var(--size-2-2);
+  color: var(--text-faint);
+}
+
+.cbk-button.clickable-icon:hover {
+  color: var(--text-normal);
+}
+
+.cbk-button.is-busy {
+  opacity: 0.5;
+  cursor: progress;
+}
+
+.markdown-rendered pre.cbk-measuring.cbk-measuring > button.copy-code-button {
+  display: inline-block;
+  visibility: hidden;
+}
+
+@media print {
+  .cbk-button {
+    display: none;
+  }
+}
+
+/* Run output */
+.cbk-output {
+  overflow: hidden;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-m);
+  background: var(--background-secondary);
+}
+
+.markdown-rendered .cbk-output {
+  margin-block: 0 var(--p-spacing);
+}
+
+.cbk-output-host {
+  padding-block: var(--size-2-3);
+}
+
+.cbk-output-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--size-2-1);
+  padding: var(--size-2-1) var(--size-2-3) var(--size-2-1) var(--size-4-3);
+  color: var(--text-muted);
+  font-family: var(--font-interface);
+  font-size: var(--font-ui-smaller);
+}
+
+.cbk-output-status {
+  flex: 1;
+}
+
+.cbk-output.is-error .cbk-output-status {
+  color: var(--text-error);
+}
+
+.cbk-output-button {
+  --icon-size: var(--icon-xs);
+}
+
+.cbk-output-body {
+  overflow: auto;
+  max-height: 24em;
+  padding: var(--size-4-2) var(--size-4-3);
+  border-top: 1px solid var(--background-modifier-border);
+  color: var(--code-normal);
+  font-family: var(--font-monospace);
+  font-size: var(--code-size);
+  line-height: var(--line-height-normal);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  user-select: text;
+}
+
+.cbk-output-body:empty {
+  display: none;
+}
+
+.cbk-stderr {
+  color: var(--text-error);
+}
+
+.cbk-truncated {
+  color: var(--text-faint);
+}

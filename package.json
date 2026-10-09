@@ -1,0 +1,31 @@
+{
+  "name": "obsidian-code-block-kit",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Code Block Kit — format and run Obsidian code blocks",
+  "main": "main.js",
+  "type": "module",
+  "scripts": {
+    "dev": "node esbuild.config.mjs",
+    "build": "tsc --noEmit --skipLibCheck && node esbuild.config.mjs production",
+    "check": "tsc --noEmit --skipLibCheck && node scripts/validate.mjs",
+    "test": "node --test \"test/*.test.ts\"",
+    "version": "node scripts/version-bump.mjs"
+  },
+  "keywords": [
+    "obsidian",
+    "code",
+    "prettier"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=22.18"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.17",
+    "esbuild": "0.25.5",
+    "obsidian": "latest",
+    "prettier": "^3.6.2",
+    "typescript": "^5.8.3"
+  }
+}

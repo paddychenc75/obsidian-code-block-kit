@@ -1,0 +1,13 @@
+.DS_Store
+.idea/
+.vscode/
+*.iml
+
+node_modules/
+npm-debug.log*
+
+# Built by `npm run build`; the release workflow attaches it to each release.
+main.js
+*.map
+
+data.json
