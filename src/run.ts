@@ -27,29 +27,36 @@ export interface RunHandle {
 interface Runner {
   command: string;
   windowsCommand?: string;
-  ext: string;
+  /** Arguments that make the interpreter read the program from stdin. */
+  args(code: string): string[];
 }
 
-const python: Runner = { command: "python3", windowsCommand: "python", ext: "py" };
-const node: Runner = { command: "node", ext: "js" };
-const bash: Runner = { command: "bash", ext: "sh" };
+const stdin = (): string[] => ["-"];
+const python: Runner = { command: "python3", windowsCommand: "python", args: stdin };
+const node: Runner = { command: "node", args: stdin };
+const bash: Runner = { command: "bash", args: () => ["-s"] };
+// Node strips the types itself from 22.18 on; older versions reject the flag. On stdin it
+// can't detect the module system as it does for JavaScript, so look for import and export.
+const typescript: Runner = {
+  command: "node",
+  args: (code) => [`--input-type=${/^\s*(import|export)\s/m.test(code) ? "module" : "commonjs"}-typescript`],
+};
 
 const RUNNERS: Record<string, Runner> = {
   python,
   py: python,
   js: node,
   javascript: node,
-  cjs: node,
-  mjs: { command: "node", ext: "mjs" },
-  // Node strips the types itself from 22.18 on; older versions report the unknown extension.
-  ts: { command: "node", ext: "ts" },
-  typescript: { command: "node", ext: "ts" },
-  mts: { command: "node", ext: "mts" },
-  cts: { command: "node", ext: "cts" },
+  cjs: { command: "node", args: () => ["--input-type=commonjs"] },
+  mjs: { command: "node", args: () => ["--input-type=module"] },
+  ts: typescript,
+  typescript,
+  mts: { command: "node", args: () => ["--input-type=module-typescript"] },
+  cts: { command: "node", args: () => ["--input-type=commonjs-typescript"] },
   sh: bash,
   bash,
   shell: bash,
-  zsh: { command: "zsh", ext: "zsh" },
+  zsh: { command: "zsh", args: () => ["-s"] },
 };
 
 /** Running needs local interpreters, so it is offered on desktop only. */
@@ -58,18 +65,13 @@ export function canRun(lang: string): boolean {
 }
 
 /**
- * Node's modules, loaded on first use. They exist on desktop only, and `canRun` keeps every
+ * Node's process API, loaded on first use. It exists on desktop only, and `canRun` keeps every
  * caller there, so the plugin still loads on mobile, where formatting works.
  */
 async function nodeModules() {
   if (!Platform.isDesktop) throw new Error("Running code needs the desktop app");
-  const [childProcess, fs, os, path] = await Promise.all([
-    import("child_process"),
-    import("fs"),
-    import("os"),
-    import("path"),
-  ]);
-  return { childProcess, fs, os, path, process: window.process };
+  const childProcess = await import("child_process");
+  return { childProcess, process: window.process };
 }
 
 let loginPath: Promise<string> | null = null;
@@ -96,11 +98,10 @@ function resolvePath(): Promise<string> {
   return loginPath;
 }
 
-/** Runs `code` from a temporary file with the interpreter for `lang`. */
+/** Pipes `code` into the interpreter for `lang`. Nothing is written to disk. */
 export function runCode(code: string, lang: string, cwd: string | undefined, events: RunEvents): RunHandle {
   const started = Date.now();
   let child: ChildProcess | null = null;
-  let cleanUp = (): void => {};
   let timer = 0;
   let stopped = false;
   let timedOut = false;
@@ -110,7 +111,6 @@ export function runCode(code: string, lang: string, cwd: string | undefined, eve
     if (finished) return;
     finished = true;
     window.clearTimeout(timer);
-    cleanUp();
     events.onExit({ code, error, stopped, timedOut, ms: Date.now() - started });
   };
 
@@ -120,26 +120,25 @@ export function runCode(code: string, lang: string, cwd: string | undefined, eve
     try {
       const runner = RUNNERS[lang];
       if (!runner) throw new Error(`No runner for "${lang}"`);
-      const { childProcess, fs, os, path, process } = await nodeModules();
+      const { childProcess, process } = await nodeModules();
       const windows = process.platform === "win32";
       const command = (windows && runner.windowsCommand) || runner.command;
 
       const PATH = await resolvePath();
-      const dir = await fs.promises.mkdtemp(path.join(os.tmpdir(), "code-block-kit-"));
-      cleanUp = () => void fs.promises.rm(dir, { recursive: true, force: true });
-      const file = path.join(dir, `snippet.${runner.ext}`);
-      await fs.promises.writeFile(file, code);
       if (stopped) {
         finish(null);
         return;
       }
 
-      const spawned = childProcess.spawn(command, [file], {
+      const spawned = childProcess.spawn(command, runner.args(code), {
         cwd,
         env: { ...process.env, PATH, PYTHONUNBUFFERED: "1", PYTHONIOENCODING: "utf-8" },
-        stdio: ["ignore", "pipe", "pipe"],
+        stdio: ["pipe", "pipe", "pipe"],
         detached: !windows,
       });
+      // An interpreter that fails to start closes the pipe early; the exit reports that.
+      spawned.stdin?.on("error", () => {});
+      spawned.stdin?.end(code);
       child = spawned;
       kill = () => {
         if (!spawned.pid) return;

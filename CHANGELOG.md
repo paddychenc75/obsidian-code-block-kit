@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.2
+
+Changed
+
+- Code is piped to the interpreter instead of being saved to a temporary file first, so the plugin no longer touches the filesystem outside the vault API
+
 ## 0.1.1
 
 Changed

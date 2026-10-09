@@ -23,8 +23,9 @@ Obsidian plugin that formats and runs fenced code blocks in place.
 
 ## Constraints
 
-- `isDesktopOnly` stays `false`: formatting works on mobile. Node built-ins are only loaded with a dynamic `import()` inside `nodeModules()` in `src/run.ts`, behind a `Platform.isDesktop` guard, so the plugin still loads there.
+- `isDesktopOnly` stays `false`: formatting works on mobile. The only Node built-in is `child_process`, loaded with a dynamic `import()` inside `nodeModules()` in `src/run.ts`, behind a `Platform.isDesktop` guard, so the plugin still loads there.
 - Running code is never automatic. It starts only from a button press or a command.
+- Code reaches the interpreter over stdin. Do not add `fs`, `os`, or `path`: the plugin review reports direct filesystem access, and nothing here needs it.
 - The buttons look the same in Reading view and Live Preview. They are measured against Obsidian's own copy button or language label rather than sharing its classes.
 - `styles.css` uses Obsidian's variables only, with no `:has()` and no `!important`. All classes are prefixed `cbk-`.
 - No `el.style.*` assignments; use classes or `setCssProps`.

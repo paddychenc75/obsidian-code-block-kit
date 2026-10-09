@@ -34,8 +34,8 @@ Running is available on desktop only.
 The interpreter must be installed. The plugin looks it up on the `PATH` of your login shell, so tools installed with Homebrew, nvm, or pyenv are found even when Obsidian is started from the Dock.
 
 - Output streams into a panel under the block, with stderr in the error colour. The panel has stop, copy, and close buttons, and running the block again reuses it.
-- The code runs from a temporary file, with the note's folder as the working directory.
-- There is no stdin, a run is killed after 60 seconds, and output is cut off after 200,000 characters.
+- The code is piped to the interpreter, with the note's folder as the working directory. Nothing is written to disk.
+- The program cannot read input, a run is killed after 60 seconds, and output is cut off after 200,000 characters.
 
 ### Security
 
@@ -45,7 +45,8 @@ The interpreter must be installed. The plugin looks it up on the `PATH` of your 
 
 - **No network use, telemetry, or accounts.** The plugin never connects to the internet.
 - **Running code starts programs outside Obsidian.** A run launches the interpreter installed on your computer, and the first run also starts your login shell once to read its `PATH`.
-- **Running code writes outside the vault.** The block is saved to a temporary file in the system's temporary folder, which is deleted when the run ends.
+- **The plugin itself reads and writes no files outside the vault.** The code you run can, like any program you start yourself.
+- **Clipboard.** The copy button on an output panel writes that output to the clipboard. The plugin never reads the clipboard.
 - Formatting changes only the code block you format, in the note it belongs to.
 
 ## Installation
