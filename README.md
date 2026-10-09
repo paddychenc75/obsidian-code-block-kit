@@ -4,8 +4,8 @@ Format and run fenced code blocks in [Obsidian](https://obsidian.md) without lea
 
 Each code block gets a format button and a run button, beside the copy button in Reading view and beside the language label in Live Preview. In Reading view the copy button stays visible on those blocks instead of appearing on hover. Two commands do the same from the keyboard, including in Source mode:
 
-- **Format code block at cursor**
-- **Run code block at cursor**
+- **Format current code block**
+- **Run current code block**
 
 ## Format
 
@@ -41,6 +41,13 @@ The interpreter must be installed. The plugin looks it up on the `PATH` of your 
 
 **Running a block executes it on your machine with your permissions. There is no sandbox.** Code never runs on its own: only when you press the run button or use the command. Only run code you understand.
 
+## Disclosures
+
+- **No network use, telemetry, or accounts.** The plugin never connects to the internet.
+- **Running code starts programs outside Obsidian.** A run launches the interpreter installed on your computer, and the first run also starts your login shell once to read its `PATH`.
+- **Running code writes outside the vault.** The block is saved to a temporary file in the system's temporary folder, which is deleted when the run ends.
+- Formatting changes only the code block you format, in the note it belongs to.
+
 ## Installation
 
 The plugin is not in the community plugin list yet. To install it by hand:
@@ -55,7 +62,7 @@ The plugin is not in the community plugin list yet. To install it by hand:
 npm install
 npm run dev     # watch build
 npm run build   # typecheck and bundle to main.js
-npm run check   # typecheck and validate manifest, versions, changelog, and CSS
+npm run check   # typecheck, lint, and validate manifest, versions, changelog, and CSS
 npm test        # fence parsing and formatter tests
 ```
 

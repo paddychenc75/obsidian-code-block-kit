@@ -67,12 +67,12 @@ export default class CodeBlockKitPlugin extends Plugin {
 
     this.addCommand({
       id: "format-code-block",
-      name: "Format code block at cursor",
+      name: "Format current code block",
       editorCallback: (editor) => void this.formatAt(editor, editor.getCursor().line),
     });
     this.addCommand({
       id: "run-code-block",
-      name: "Run code block at cursor",
+      name: "Run current code block",
       editorCallback: (editor) => this.runAt(editor, editor.getCursor().line),
     });
 
@@ -225,7 +225,7 @@ export default class CodeBlockKitPlugin extends Plugin {
     const fence = parseFences(lines).find(
       (candidate) => line >= candidate.open && line <= candidate.last + (candidate.closed ? 1 : 0),
     );
-    if (!fence) new Notice("Place the cursor inside a code block.");
+    if (!fence) new Notice("No code block at this position.");
     return fence ?? null;
   }
 

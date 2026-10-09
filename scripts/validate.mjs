@@ -95,7 +95,7 @@ for (const file of ["src/main.ts", "src/live.ts", "src/output.ts", "src/place.ts
   if (!existsSync(resolve(root, file))) continue;
   const source = read(file);
   const topLevelNode = source.match(/^import (?!type\b).*from "(?:node:)?(child_process|fs|os|path)";$/m);
-  if (topLevelNode) fail(`${file} imports "${topLevelNode[1]}" at the top level; require it inside a function`);
+  if (topLevelNode) fail(`${file} imports "${topLevelNode[1]}" at the top level; load it with a guarded dynamic import()`);
   if (/\.style\.[a-zA-Z]+\s*=[^=]/.test(source)) fail(`${file} assigns el.style.*; use classes or setCssProps`);
 }
 

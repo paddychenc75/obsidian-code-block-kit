@@ -1,7 +1,8 @@
 import { setIcon } from "obsidian";
 import type { Stream } from "./run";
 
-const ANSI = /\x1b\[[0-9;?]*[ -/]*[@-~]/g;
+// Terminal colour and cursor sequences, which start with the escape character.
+const ANSI = new RegExp(`${String.fromCharCode(27)}\\[[0-9;?]*[ -/]*[@-~]`, "g");
 const LIMIT = 200_000;
 
 /** Older Obsidian builds ship a Lucide set without some of the newer icon names. */

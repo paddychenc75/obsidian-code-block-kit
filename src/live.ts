@@ -139,7 +139,8 @@ class OutputWidget extends WidgetType {
 const showOutput = StateEffect.define<{ pos: number; widget: OutputWidget }>();
 const hideOutput = StateEffect.define<HTMLElement>();
 
-const panelOf = (decoration: Decoration): HTMLElement => (decoration.spec.widget as OutputWidget).panel;
+const panelOf = (decoration: Decoration): HTMLElement =>
+  (decoration.spec as { widget: OutputWidget }).widget.panel;
 
 /** Output panels shown under code blocks in the editor. */
 export const outputField = StateField.define<DecorationSet>({

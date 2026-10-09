@@ -10,7 +10,7 @@ Obsidian plugin that formats and runs fenced code blocks in place.
 ## Workflow
 
 - Edit TypeScript under `src/`. `main.js` is build output and is not tracked; the release workflow builds it.
-- `npm run build` typechecks and bundles. `npm run check` typechecks and validates the manifest, versions, changelog, and CSS rules. `npm test` covers fence parsing and the formatter. Run all three before committing.
+- `npm run build` typechecks and bundles. `npm run check` typechecks, lints with Obsidian's own `eslint-plugin-obsidianmd` rules, and validates the manifest, versions, changelog, and CSS rules. `npm test` covers fence parsing and the formatter. Run all three before committing.
 - To try a build, copy `main.js`, `manifest.json`, and `styles.css` to `<vault>/.obsidian/plugins/code-block-kit/` and reload the plugin.
 - To release: set the version in `package.json`, run `npm run version` to sync `manifest.json` and `versions.json`, add a `CHANGELOG.md` entry, then push a tag named after the version. The tag triggers `.github/workflows/release.yml`.
 
@@ -23,7 +23,7 @@ Obsidian plugin that formats and runs fenced code blocks in place.
 
 ## Constraints
 
-- `isDesktopOnly` stays `false`: formatting works on mobile. Node built-ins are only ever `require`d inside a function, behind `canRun`, so the plugin still loads there.
+- `isDesktopOnly` stays `false`: formatting works on mobile. Node built-ins are only loaded with a dynamic `import()` inside `nodeModules()` in `src/run.ts`, behind a `Platform.isDesktop` guard, so the plugin still loads there.
 - Running code is never automatic. It starts only from a button press or a command.
 - The buttons look the same in Reading view and Live Preview. They are measured against Obsidian's own copy button or language label rather than sharing its classes.
 - `styles.css` uses Obsidian's variables only, with no `:has()` and no `!important`. All classes are prefixed `cbk-`.

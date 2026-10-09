@@ -31,6 +31,9 @@ const context = await esbuild.context({
     ...builtinModules,
   ],
   format: "cjs",
+  // Obsidian loads plugins as CommonJS, where a native import() of a Node built-in fails.
+  // This turns the guarded import()s in src/run.ts into require() calls.
+  supported: { "dynamic-import": false },
   target: "es2021",
   logLevel: "info",
   sourcemap: prod ? false : "inline",

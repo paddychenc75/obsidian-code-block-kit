@@ -8,9 +8,10 @@
   "scripts": {
     "dev": "node esbuild.config.mjs",
     "build": "tsc --noEmit --skipLibCheck && node esbuild.config.mjs production",
-    "check": "tsc --noEmit --skipLibCheck && node scripts/validate.mjs",
+    "check": "tsc --noEmit --skipLibCheck && eslint . && node scripts/validate.mjs",
     "test": "node --test \"test/*.test.ts\"",
-    "version": "node scripts/version-bump.mjs"
+    "version": "node scripts/version-bump.mjs",
+    "lint": "eslint ."
   },
   "keywords": [
     "obsidian",
@@ -22,10 +23,17 @@
     "node": ">=22.18"
   },
   "devDependencies": {
+    "@codemirror/state": "^6.7.6",
+    "@codemirror/view": "^6.43.13",
+    "@eslint/js": "^9.39.5",
+    "@eslint/json": "^0.14.0",
     "@types/node": "^22.15.17",
     "esbuild": "0.25.5",
+    "eslint": "^9.39.5",
+    "eslint-plugin-obsidianmd": "^0.4.2",
     "obsidian": "latest",
     "prettier": "^3.6.2",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.71.1"
   }
 }
