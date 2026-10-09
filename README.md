@@ -29,7 +29,6 @@ Running is available on desktop only.
 | Python | `python3` (`python` on Windows) |
 | JavaScript | `node` |
 | TypeScript | `node` 22.18 or newer, which strips the types itself |
-| Shell | `bash`, `zsh` |
 
 The interpreter must be installed. The plugin looks it up on the `PATH` of your login shell, so tools installed with Homebrew, nvm, or pyenv are found even when Obsidian is started from the Dock.
 

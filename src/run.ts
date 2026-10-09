@@ -34,7 +34,6 @@ interface Runner {
 const stdin = (): string[] => ["-"];
 const python: Runner = { command: "python3", windowsCommand: "python", args: stdin };
 const node: Runner = { command: "node", args: stdin };
-const bash: Runner = { command: "bash", args: () => ["-s"] };
 // Node strips the types itself from 22.18 on; older versions reject the flag. On stdin it
 // can't detect the module system as it does for JavaScript, so look for import and export.
 const typescript: Runner = {
@@ -53,10 +52,6 @@ const RUNNERS: Record<string, Runner> = {
   typescript,
   mts: { command: "node", args: () => ["--input-type=module-typescript"] },
   cts: { command: "node", args: () => ["--input-type=commonjs-typescript"] },
-  sh: bash,
-  bash,
-  shell: bash,
-  zsh: { command: "zsh", args: () => ["-s"] },
 };
 
 /** Running needs local interpreters, so it is offered on desktop only. */

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.3
+
+Removed
+
+- Running shell blocks (`sh`, `bash`, `shell`, `zsh`). Python, JavaScript, and TypeScript blocks still run
+
 ## 0.1.2
 
 Changed
