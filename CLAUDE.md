@@ -17,15 +17,16 @@ Obsidian plugin that formats and runs fenced code blocks in place.
 ## Layout
 
 - `src/fence.ts` finds fenced blocks in source lines and puts list and callout prefixes back. It has no Obsidian imports, so it is tested directly.
-- `src/format.ts` maps languages to Prettier parsers. `src/run.ts` maps languages to interpreters and owns the child process.
+- `src/format.ts` maps languages to Prettier parsers. `src/run.ts` strips TypeScript with Sucrase and owns the worker.
 - `src/main.ts` holds the Reading view buttons and the commands. `src/live.ts` holds the Live Preview buttons and the output panel decoration.
 - `src/place.ts` positions the buttons in both views; `src/output.ts` is the output panel.
 
 ## Constraints
 
-- `isDesktopOnly` stays `false`: formatting works on mobile. The only Node built-in is `child_process`, loaded with a dynamic `import()` inside `nodeModules()` in `src/run.ts`, behind a `Platform.isDesktop` guard, so the plugin still loads there.
+- The plugin loads no Node or Electron module and does not touch the clipboard; `npm run check` fails if one comes back. Obsidian's plugin review reports each of those, and nothing here needs them.
+- Code runs in a module Web Worker built from a Blob (`src/run.ts`). The prelude that captures `console` output is a string, because it executes in the worker, not in the plugin.
+- The worker is not a security boundary: desktop Obsidian gives workers Node. Never describe it as a sandbox in the README or UI.
 - Running code is never automatic. It starts only from a button press or a command.
-- Code reaches the interpreter over stdin. Do not add `fs`, `os`, or `path`: the plugin review reports direct filesystem access, and nothing here needs it.
 - The buttons look the same in Reading view and Live Preview. They are measured against Obsidian's own copy button or language label rather than sharing its classes.
 - `styles.css` uses Obsidian's variables only, with no `:has()` and no `!important`. All classes are prefixed `cbk-`.
 - No `el.style.*` assignments; use classes or `setCssProps`.

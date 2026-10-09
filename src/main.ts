@@ -1,8 +1,6 @@
 import type { EditorView } from "@codemirror/view";
 import {
   Editor,
-  editorInfoField,
-  FileSystemAdapter,
   MarkdownPostProcessorContext,
   MarkdownView,
   Notice,
@@ -42,10 +40,9 @@ function renderedText(code: HTMLElement): string {
 }
 
 function summarize(result: RunResult): string {
-  if (result.error) return `Failed: ${result.error}`;
   if (result.timedOut) return `Timed out after ${TIMEOUT_MS / 1000} s`;
   if (result.stopped) return "Stopped";
-  return `Exited with code ${result.code ?? "?"} · ${(result.ms / 1000).toFixed(2)} s`;
+  return `${result.ok ? "Finished" : "Failed"} · ${(result.ms / 1000).toFixed(2)} s`;
 }
 
 export default class CodeBlockKitPlugin extends Plugin {
@@ -127,7 +124,7 @@ export default class CodeBlockKitPlugin extends Plugin {
         add("play", "Run code", () => {
           const below = pre.nextElementSibling;
           const shown = below?.instanceOf(HTMLElement) && below.hasClass("cbk-output") ? below : null;
-          this.run(renderedText(code), lang, ctx.sourcePath, shown, (panel) => {
+          this.run(renderedText(code), lang, shown, (panel) => {
             pre.insertAdjacentElement("afterend", panel);
             return () => panel.remove();
           });
@@ -268,14 +265,13 @@ export default class CodeBlockKitPlugin extends Plugin {
     if (!view) return;
 
     const below = view.state.doc.line(fence.last + (fence.closed ? 2 : 1)).to;
-    const sourcePath = view.state.field(editorInfoField).file?.path ?? "";
-    this.run(fence.code, fence.lang, sourcePath, outputAt(view, below), (panel) =>
+    this.run(fence.code, fence.lang, outputAt(view, below), (panel) =>
       mountOutput(view, below, panel),
     );
   }
 
   /** Runs `code` into `shown`, the block's panel from an earlier run, or into a new panel. */
-  private run(code: string, lang: string, sourcePath: string, shown: HTMLElement | null, mount: Mount): void {
+  private run(code: string, lang: string, shown: HTMLElement | null, mount: Mount): void {
     let session = shown ? this.sessions.get(shown) : undefined;
     if (session) {
       session.handle?.stop();
@@ -302,21 +298,13 @@ export default class CodeBlockKitPlugin extends Plugin {
 
     const current = session;
     const run = ++current.run;
-    current.handle = runCode(code, lang, this.folderOf(sourcePath), {
+    current.handle = runCode(code, lang, {
       onData: (text, stream) => {
         if (current.run === run) current.panel.write(text, stream);
       },
       onExit: (result) => {
-        if (current.run === run) current.panel.finish(summarize(result), result.code === 0 || result.stopped);
+        if (current.run === run) current.panel.finish(summarize(result), result.ok || result.stopped);
       },
     });
-  }
-
-  /** Runs start in the note's own folder so relative paths in the code resolve from there. */
-  private folderOf(sourcePath: string): string | undefined {
-    const adapter = this.app.vault.adapter;
-    if (!(adapter instanceof FileSystemAdapter)) return undefined;
-    const parent = this.app.vault.getFileByPath(sourcePath)?.parent;
-    return parent && !parent.isRoot() ? `${adapter.getBasePath()}/${parent.path}` : adapter.getBasePath();
   }
 }

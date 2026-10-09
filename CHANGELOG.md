@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.2.0
+
+Running code no longer starts anything outside Obsidian.
+
+Changed
+
+- JavaScript and TypeScript blocks run in a Web Worker inside Obsidian instead of in a separate `node` process. No interpreter needs to be installed, and running works on mobile too
+- Blocks run as ES modules, so `import` and top-level `await` work. A run ends when the block has finished and no timer is pending
+- The panel reports `Finished` or `Failed` instead of an exit code
+
+Removed
+
+- Running Python blocks, which needed a local interpreter
+- Everything that used Node: the plugin no longer loads `child_process` or starts a login shell to read `PATH`
+
 ## 0.1.4
 
 Removed

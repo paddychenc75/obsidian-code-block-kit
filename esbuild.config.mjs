@@ -1,4 +1,5 @@
 import esbuild from "esbuild";
+import { readFile } from "node:fs/promises";
 import { builtinModules } from "node:module";
 import process from "node:process";
 
@@ -10,10 +11,26 @@ Edit src/ and run \`npm run build\`.
 
 const prod = process.argv[2] === "production";
 
+// Sucrase carries the source text of a React Hot Loader helper that contains `eval(code)`.
+// That transform is never enabled here, and the text alone reads as dynamic code execution to
+// the plugin review, so it is left out of the bundle.
+const dropHotLoaderHelper = {
+  name: "drop-hot-loader-helper",
+  setup(build) {
+    build.onLoad({ filter: /sucrase[\\/]dist[\\/]esm[\\/]transformers[\\/]RootTransformer\.js$/ }, async (args) => {
+      const source = await readFile(args.path, "utf8");
+      const helper = "{this[key] = eval(code);}";
+      if (!source.includes(helper)) throw new Error("Sucrase changed; update dropHotLoaderHelper");
+      return { contents: source.replace(helper, "{}"), loader: "js" };
+    });
+  },
+};
+
 const context = await esbuild.context({
   banner: { js: banner },
   entryPoints: ["src/main.ts"],
   bundle: true,
+  plugins: [dropHotLoaderHelper],
   external: [
     "obsidian",
     "electron",
@@ -31,9 +48,6 @@ const context = await esbuild.context({
     ...builtinModules,
   ],
   format: "cjs",
-  // Obsidian loads plugins as CommonJS, where a native import() of a Node built-in fails.
-  // This turns the guarded import()s in src/run.ts into require() calls.
-  supported: { "dynamic-import": false },
   target: "es2021",
   logLevel: "info",
   sourcemap: prod ? false : "inline",

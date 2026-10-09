@@ -61,7 +61,7 @@ if (/obsidian|plugin/i.test(`${manifest.id} ${manifest.name}`)) {
 if (/obsidian/i.test(manifest.description ?? "") || !/[.?!)]$/.test(manifest.description ?? "")) {
   fail("manifest description must not mention Obsidian and must end with punctuation");
 }
-// Formatting works on mobile; running is switched off there at runtime instead.
+// Nothing here needs the desktop app.
 if (manifest.isDesktopOnly !== false) {
   fail("manifest isDesktopOnly must be false");
 }
@@ -90,22 +90,27 @@ if (/:has\(/.test(stylesWithoutComments)) fail("styles.css must not use :has()")
 const ownClasses = [...stylesWithoutComments.matchAll(/\.(cbk-[a-z0-9-]+)/g)].length;
 if (ownClasses === 0) fail("styles.css defines no cbk-* classes");
 
-// Node built-ins must stay behind a call, or the plugin fails to load on mobile.
+// The plugin uses no Node built-ins: code runs in a Web Worker and formatting is pure JavaScript.
 for (const file of ["src/main.ts", "src/live.ts", "src/output.ts", "src/place.ts", "src/fence.ts", "src/format.ts", "src/run.ts"]) {
   if (!existsSync(resolve(root, file))) continue;
   const source = read(file);
-  const topLevelNode = source.match(/^import (?!type\b).*from "(?:node:)?(child_process|fs|os|path)";$/m);
-  if (topLevelNode) fail(`${file} imports "${topLevelNode[1]}" at the top level; load it with a guarded dynamic import()`);
+  const builtin = source.match(/(?:from |import\(|require\()"(?:node:)?(child_process|fs|os|path|electron)"/);
+  if (builtin) fail(`${file} loads "${builtin[1]}"; the plugin is meant to need no Node or Electron module`);
   if (/navigator\.clipboard/.test(source)) fail(`${file} uses the clipboard; the plugin is meant not to`);
-  const filesystem = source.match(/import\("(?:node:)?(fs|os|path)"\)|require\("(?:node:)?(fs|os|path)"\)/);
-  if (filesystem) fail(`${file} loads "${filesystem[1] ?? filesystem[2]}"; code goes to the interpreter over stdin`);
   if (/\.style\.[a-zA-Z]+\s*=[^=]/.test(source)) fail(`${file} assigns el.style.*; use classes or setCssProps`);
 }
 
 // Obsidian's review rejects bundles with hex-style identifiers as obfuscated. A dependency can
 // bring them in: the TypeScript compiler has `..._between_0x0_and_0x10FFFF_...`.
-if (existsSync(resolve(root, "main.js")) && /_0x[0-9a-fA-F]/.test(read("main.js"))) {
+const bundle = existsSync(resolve(root, "main.js")) ? read("main.js") : "";
+if (/_0x[0-9a-fA-F]/.test(bundle)) {
   fail("main.js contains _0x identifiers, which the plugin review flags as obfuscation");
+}
+if (/[^\w.$]eval\(|new Function\(/.test(bundle)) {
+  fail("main.js contains eval or new Function, which the plugin review flags as dynamic code execution");
+}
+for (const builtin of ["child_process", "fs", "os", "path", "electron"]) {
+  if (bundle.includes(`require("${builtin}")`)) fail(`main.js requires "${builtin}"`);
 }
 
 const readme = existsSync(resolve(root, "README.md")) ? read("README.md") : "";

@@ -22,29 +22,24 @@ Blocks nested in lists and callouts keep their indentation and `>` markers.
 
 ## Run
 
-Running is available on desktop only.
+JavaScript and TypeScript blocks run inside Obsidian, in a [Web Worker](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API). Nothing has to be installed, and it works on desktop and mobile.
 
-| Language | Interpreter |
-| --- | --- |
-| Python | `python3` (`python` on Windows) |
-| JavaScript | `node` |
-| TypeScript | `node` 22.18 or newer, which strips the types itself |
-
-The interpreter must be installed. The plugin looks it up on the `PATH` of your login shell, so tools installed with Homebrew, nvm, or pyenv are found even when Obsidian is started from the Dock.
-
-- Output streams into a panel under the block, with stderr in the error colour. The panel has stop and close buttons, its text can be selected and copied, and running the block again reuses it.
-- The code is piped to the interpreter, with the note's folder as the working directory. Nothing is written to disk.
-- The program cannot read input, a run is killed after 60 seconds, and output is cut off after 200,000 characters.
+- Blocks run as ES modules: `import` from a URL and top-level `await` work.
+- TypeScript is stripped of its types first; it is not type-checked.
+- `console.log`, `info`, and `debug` go to the output panel under the block, `warn` and `error` in the error colour. An uncaught error is shown with its line number.
+- A run ends when the block has finished and no timer is pending. The panel has stop and close buttons, its text can be selected and copied, and running the block again reuses it.
+- A run is stopped after 60 seconds, and output is cut off after 200,000 characters.
 
 ### Security
 
-**Running a block executes it on your machine with your permissions. There is no sandbox.** Code never runs on its own: only when you press the run button or use the command. Only run code you understand.
+Code never runs on its own: only when you press the run button or use the command. Only run code you understand.
+
+**The worker is not a sandbox on desktop.** The desktop app gives workers Node.js, so a block can call `require("fs")` or start other programs, with your permissions. On mobile there is no Node.js, and a block is limited to what a web page can do, which includes network requests.
 
 ## Disclosures
 
-- **No network use, telemetry, or accounts.** The plugin never connects to the internet.
-- **Running code starts programs outside Obsidian.** A run launches the interpreter installed on your computer, and the first run also starts your login shell once to read its `PATH`.
-- **The plugin itself reads and writes no files outside the vault.** The code you run can, like any program you start yourself.
+- **The plugin makes no network requests, and has no telemetry or accounts.** Code you run can make its own.
+- **The plugin starts no programs and reads or writes no files outside the vault.** Code you run on desktop can, as described under Security.
 - **No clipboard access.** The plugin neither reads nor writes the clipboard.
 - Formatting changes only the code block you format, in the note it belongs to.
 
