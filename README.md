@@ -2,7 +2,7 @@
 
 Format and run fenced code blocks in [Obsidian](https://obsidian.md) without leaving the note.
 
-Each code block gets a format button and a run button, beside the copy button in Reading view and beside the language label in Live Preview. Two commands do the same from the keyboard, including in Source mode:
+Each code block gets a format button and a run button, beside the copy button in Reading view and beside the language label in Live Preview. In Reading view the copy button stays visible on those blocks instead of appearing on hover. Two commands do the same from the keyboard, including in Source mode:
 
 - **Format code block at cursor**
 - **Run code block at cursor**
@@ -28,11 +28,12 @@ Running is available on desktop only.
 | --- | --- |
 | Python | `python3` (`python` on Windows) |
 | JavaScript | `node` |
+| TypeScript | `node` 22.18 or newer, which strips the types itself |
 | Shell | `bash`, `zsh` |
 
 The interpreter must be installed. The plugin looks it up on the `PATH` of your login shell, so tools installed with Homebrew, nvm, or pyenv are found even when Obsidian is started from the Dock.
 
-- Output streams into a panel under the block, with stderr in the error colour. The panel has stop, copy, and close buttons.
+- Output streams into a panel under the block, with stderr in the error colour. The panel has stop, copy, and close buttons, and running the block again reuses it.
 - The code runs from a temporary file, with the note's folder as the working directory.
 - There is no stdin, a run is killed after 60 seconds, and output is cut off after 200,000 characters.
 

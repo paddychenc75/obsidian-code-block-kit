@@ -85,7 +85,9 @@ export function liveButtons(format: Action, run: Action) {
         key: this,
         read: (view: EditorView): Placement[] => {
           const lines = new Map<HTMLElement, HTMLElement[]>();
-          for (const button of Array.from(view.contentDOM.querySelectorAll<HTMLElement>(".cbk-button"))) {
+          // Only the editor's own lines: a rendered callout carries Reading view buttons, which
+          // are placed against the copy button instead.
+          for (const button of Array.from(view.contentDOM.querySelectorAll<HTMLElement>(".cm-line > .cbk-button"))) {
             const line = button.parentElement;
             if (line) lines.set(line, [...(lines.get(line) ?? []), button]);
           }
@@ -114,10 +116,7 @@ export function liveButtons(format: Action, run: Action) {
 }
 
 class OutputWidget extends WidgetType {
-  constructor(
-    readonly panel: HTMLElement,
-    readonly close: () => void,
-  ) {
+  constructor(readonly panel: HTMLElement) {
     super();
   }
 
@@ -162,15 +161,18 @@ export const outputField = StateField.define<DecorationSet>({
   provide: (field) => EditorView.decorations.from(field),
 });
 
-/** Shows `panel` below the line that ends at `pos`, replacing an earlier run's panel there. */
-export function mountOutput(view: EditorView, pos: number, panel: HTMLElement, close: () => void): () => void {
-  const earlier: OutputWidget[] = [];
+/** The output panel already shown below the line that ends at `pos`, if any. */
+export function outputAt(view: EditorView, pos: number): HTMLElement | null {
+  let panel: HTMLElement | null = null;
   view.state.field(outputField).between(pos, pos, (_from, _to, value) => {
-    earlier.push(value.spec.widget as OutputWidget);
+    panel = panelOf(value);
   });
-  for (const widget of earlier) widget.close();
+  return panel;
+}
 
-  view.dispatch({ effects: showOutput.of({ pos, widget: new OutputWidget(panel, close) }) });
+/** Shows `panel` below the line that ends at `pos` and returns the function that removes it. */
+export function mountOutput(view: EditorView, pos: number, panel: HTMLElement): () => void {
+  view.dispatch({ effects: showOutput.of({ pos, widget: new OutputWidget(panel) }) });
   return () => {
     try {
       view.dispatch({ effects: hideOutput.of(panel) });

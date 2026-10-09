@@ -19,9 +19,12 @@
   cursor: progress;
 }
 
-.markdown-rendered pre.cbk-measuring.cbk-measuring > button.copy-code-button {
-  display: inline-block;
-  visibility: hidden;
+/* Reading view: keep the copy button on screen beside ours, as the language label is in Live
+   Preview. The class is doubled to outrank the hover rule whatever order the sheets load in. */
+@media screen {
+  .markdown-rendered pre.cbk-block.cbk-block > button.copy-code-button {
+    display: inline-flex;
+  }
 }
 
 @media print {
@@ -80,6 +83,14 @@
   white-space: pre-wrap;
   overflow-wrap: anywhere;
   user-select: text;
+}
+
+.cbk-output.is-stale .cbk-output-body {
+  opacity: 0.5;
+}
+
+.cbk-hidden {
+  display: none;
 }
 
 .cbk-output-body:empty {

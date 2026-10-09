@@ -17,6 +17,8 @@ export class OutputPanel {
   private stop: HTMLElement;
   private body: HTMLElement;
   private size = 0;
+  /** Output of the previous run, kept on screen until the new run has something to show. */
+  private stale = false;
 
   constructor(onStop: () => void, onClose: () => void) {
     const bar = this.el.createDiv({ cls: "cbk-output-bar" });
@@ -43,7 +45,25 @@ export class OutputPanel {
     return button;
   }
 
+  /** Readies the panel for another run without collapsing it, so the note doesn't jump. */
+  restart(): void {
+    this.status.setText("Running…");
+    this.stop.removeClass("cbk-hidden");
+    this.el.removeClass("is-error");
+    this.stale = this.size > 0;
+    this.el.toggleClass("is-stale", this.stale);
+  }
+
+  private clearStale(): void {
+    if (!this.stale) return;
+    this.stale = false;
+    this.el.removeClass("is-stale");
+    this.body.empty();
+    this.size = 0;
+  }
+
   write(text: string, stream: Stream): void {
+    this.clearStale();
     if (this.size >= LIMIT) return;
     const clean = text.replace(ANSI, "").slice(0, LIMIT - this.size);
     this.size += clean.length;
@@ -53,8 +73,9 @@ export class OutputPanel {
   }
 
   finish(summary: string, ok: boolean): void {
+    this.clearStale();
     this.status.setText(summary);
-    this.stop.remove();
+    this.stop.addClass("cbk-hidden");
     this.el.toggleClass("is-error", !ok);
   }
 }

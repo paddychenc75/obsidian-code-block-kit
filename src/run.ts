@@ -40,6 +40,11 @@ const RUNNERS: Record<string, Runner> = {
   javascript: node,
   cjs: node,
   mjs: { command: "node", ext: "mjs" },
+  // Node strips the types itself from 22.18 on; older versions report the unknown extension.
+  ts: { command: "node", ext: "ts" },
+  typescript: { command: "node", ext: "ts" },
+  mts: { command: "node", ext: "mts" },
+  cts: { command: "node", ext: "cts" },
   sh: bash,
   bash,
   shell: bash,

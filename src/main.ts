@@ -11,7 +11,7 @@ import {
 } from "obsidian";
 import { Fence, parseFences, withPrefix } from "./fence";
 import { canFormat, formatCode } from "./format";
-import { liveButtons, mountOutput, outputField } from "./live";
+import { liveButtons, mountOutput, outputAt, outputField } from "./live";
 import { OutputPanel, setButtonIcon } from "./output";
 import { apply, measure } from "./place";
 import { canRun, runCode, RunHandle, RunResult, TIMEOUT_MS } from "./run";
@@ -19,7 +19,16 @@ import { canRun, runCode, RunHandle, RunResult, TIMEOUT_MS } from "./run";
 const CODE = "pre > code";
 
 /** Puts a run's panel on screen and returns the function that takes it down again. */
-type Mount = (panel: OutputPanel, close: () => void) => () => void;
+type Mount = (panel: HTMLElement) => () => void;
+
+/** One output panel and whatever is running into it. A block's panel is reused across runs. */
+interface Session {
+  panel: OutputPanel;
+  handle: RunHandle | null;
+  /** Counts runs, so output from a run that was replaced is dropped. */
+  run: number;
+  close(): void;
+}
 
 function languageOf(code: HTMLElement): string {
   for (const cls of Array.from(code.classList)) {
@@ -40,16 +49,17 @@ function summarize(result: RunResult): string {
 }
 
 export default class CodeBlockKitPlugin extends Plugin {
-  /** Close functions of the runs whose panels are still on screen. */
-  private runs = new Set<() => void>();
-  private renderedRuns = new WeakMap<HTMLElement, () => void>();
-  /** Places a rendered block's buttons once it is laid out, which is after it is decorated. */
+  /** Sessions whose panels are still on screen, by panel element. */
+  private sessions = new Map<HTMLElement, Session>();
+  // A rendered block is decorated before it is laid out, so its buttons are placed whenever
+  // the block comes into view or changes size.
   private shown = new IntersectionObserver((entries) => {
     for (const entry of entries) {
-      if (!entry.isIntersecting) continue;
-      this.shown.unobserve(entry.target);
-      this.place(entry.target as HTMLElement);
+      if (entry.isIntersecting) this.place(entry.target as HTMLElement);
     }
+  });
+  private resized = new ResizeObserver((entries) => {
+    for (const entry of entries) this.place(entry.target as HTMLElement);
   });
 
   onload(): void {
@@ -77,9 +87,11 @@ export default class CodeBlockKitPlugin extends Plugin {
 
   onunload(): void {
     this.shown.disconnect();
-    for (const close of Array.from(this.runs)) close();
+    this.resized.disconnect();
+    for (const session of Array.from(this.sessions.values())) session.close();
     this.app.workspace.iterateAllLeaves((leaf) => {
       leaf.view.containerEl.querySelectorAll(".cbk-button").forEach((button) => button.remove());
+      leaf.view.containerEl.querySelectorAll(".cbk-block").forEach((pre) => pre.removeClass("cbk-block"));
     });
   }
 
@@ -113,30 +125,29 @@ export default class CodeBlockKitPlugin extends Plugin {
       }
       if (canRun(lang)) {
         add("play", "Run code", () => {
-          this.run(renderedText(code), lang, ctx.sourcePath, (panel, close) => {
-            this.renderedRuns.get(pre)?.();
-            pre.insertAdjacentElement("afterend", panel.el);
-            this.renderedRuns.set(pre, close);
-            return () => panel.el.remove();
+          const below = pre.nextElementSibling;
+          const shown = below?.instanceOf(HTMLElement) && below.hasClass("cbk-output") ? below : null;
+          this.run(renderedText(code), lang, ctx.sourcePath, shown, (panel) => {
+            pre.insertAdjacentElement("afterend", panel);
+            return () => panel.remove();
           });
         });
       }
       if (!buttons.length) continue;
 
+      // Obsidian only shows the copy button on hover, which would leave a gap beside ours.
+      pre.addClass("cbk-block");
       this.shown.observe(pre);
+      this.resized.observe(pre);
       pre.addEventListener("pointerenter", () => this.place(pre));
     }
   }
 
   /** Themes size and place the copy button differently, so line up beside wherever it is. */
   private place(pre: HTMLElement): void {
-    // The copy button is only laid out while the block is hovered; this class lays it out unseen.
-    pre.addClass("cbk-measuring");
     const copy = pre.querySelector<HTMLElement>(":scope > .copy-code-button");
     const buttons = Array.from(pre.querySelectorAll<HTMLElement>(":scope > .cbk-button"));
-    const placements = measure(pre, copy, buttons);
-    pre.removeClass("cbk-measuring");
-    apply(placements);
+    apply(measure(pre, copy, buttons));
   }
 
   private async format(code: string, lang: string): Promise<string | null> {
@@ -155,15 +166,18 @@ export default class CodeBlockKitPlugin extends Plugin {
     code: HTMLElement,
     ctx: MarkdownPostProcessorContext,
   ): Promise<void> {
-    const info = ctx.getSectionInfo(code) ?? ctx.getSectionInfo(el);
     const file = this.app.vault.getFileByPath(ctx.sourcePath);
-    if (!info || !file) {
+    if (!file) {
       new Notice("Can't locate this code block in the note.");
       return;
     }
 
-    const lines = info.text.split(/\r?\n/);
-    const fence = this.matchFence(parseFences(lines, info.lineStart, info.lineEnd), el, code);
+    // Live Preview renders callouts without section info, so search the whole note there.
+    await this.flush(file);
+    const info = ctx.getSectionInfo(code) ?? ctx.getSectionInfo(el);
+    const lines = (info?.text ?? (await this.app.vault.read(file))).split(/\r?\n/);
+    const fences = parseFences(lines, info?.lineStart ?? 0, info?.lineEnd ?? lines.length - 1);
+    const fence = this.matchFence(fences, el, code);
     if (!fence) {
       new Notice("Can't locate this code block in the note.");
       return;
@@ -176,7 +190,6 @@ export default class CodeBlockKitPlugin extends Plugin {
       return;
     }
 
-    await this.flush(file);
     const expected = lines.slice(fence.open, fence.last + 1);
     let applied = false;
     await this.app.vault.process(file, (data) => {
@@ -256,24 +269,46 @@ export default class CodeBlockKitPlugin extends Plugin {
 
     const below = view.state.doc.line(fence.last + (fence.closed ? 2 : 1)).to;
     const sourcePath = view.state.field(editorInfoField).file?.path ?? "";
-    this.run(fence.code, fence.lang, sourcePath, (panel, close) => mountOutput(view, below, panel.el, close));
+    this.run(fence.code, fence.lang, sourcePath, outputAt(view, below), (panel) =>
+      mountOutput(view, below, panel),
+    );
   }
 
-  private run(code: string, lang: string, sourcePath: string, mount: Mount): void {
-    let handle: RunHandle | null = null;
-    let unmount = (): void => {};
-    const close = (): void => {
-      handle?.stop();
-      unmount();
-      this.runs.delete(close);
-    };
-    const panel = new OutputPanel(() => handle?.stop(), close);
-    unmount = mount(panel, close);
-    this.runs.add(close);
+  /** Runs `code` into `shown`, the block's panel from an earlier run, or into a new panel. */
+  private run(code: string, lang: string, sourcePath: string, shown: HTMLElement | null, mount: Mount): void {
+    let session = shown ? this.sessions.get(shown) : undefined;
+    if (session) {
+      session.handle?.stop();
+      session.panel.restart();
+    } else {
+      let unmount = (): void => {};
+      const created: Session = {
+        panel: new OutputPanel(
+          () => created.handle?.stop(),
+          () => created.close(),
+        ),
+        handle: null,
+        run: 0,
+        close: () => {
+          created.handle?.stop();
+          unmount();
+          this.sessions.delete(created.panel.el);
+        },
+      };
+      unmount = mount(created.panel.el);
+      this.sessions.set(created.panel.el, created);
+      session = created;
+    }
 
-    handle = runCode(code, lang, this.folderOf(sourcePath), {
-      onData: (text, stream) => panel.write(text, stream),
-      onExit: (result) => panel.finish(summarize(result), result.code === 0),
+    const current = session;
+    const run = ++current.run;
+    current.handle = runCode(code, lang, this.folderOf(sourcePath), {
+      onData: (text, stream) => {
+        if (current.run === run) current.panel.write(text, stream);
+      },
+      onExit: (result) => {
+        if (current.run === run) current.panel.finish(summarize(result), result.code === 0 || result.stopped);
+      },
     });
   }
 
