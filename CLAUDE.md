@@ -21,6 +21,7 @@ Obsidian plugin that formats and runs fenced code blocks in place.
 - `src/blocks.ts` is the editor state field every editor feature reads: the note's fences, parsed once per change, plus helpers that give a line's code without its prefix. Add new editor features on top of it rather than calling `parseFences` again.
 - `src/edit.ts` holds editing inside blocks: the keymap, the bracket input handler, comment styles per language, and the syntax linter.
 - `src/main.ts` holds the Reading view buttons and the commands. `src/live.ts` holds the Live Preview buttons and the output panel decoration.
+- `src/open.ts` saves a block to `snippets/` in the plugin's folder and opens it with a `vscode://` link. It goes through the vault adapter and `window.open`, not Node.
 - `src/place.ts` positions the buttons in both views; `src/output.ts` is the output panel.
 
 ## Constraints

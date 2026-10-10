@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.0
+
+Added
+
+- **Open in VS Code** button and **Open current code block in VS Code** command, on desktop, for a block in any language. The block is saved as a file in the plugin's folder and opened in VS Code, where it can be run with the tools installed on the computer
+
 ## 0.3.0
 
 Editing code inside a block now behaves more like a code editor. All of it applies only while the cursor is in a code block.

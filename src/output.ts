@@ -8,7 +8,9 @@ const LIMIT = 200_000;
 /** Older Obsidian builds ship a Lucide set without some of the newer icon names. */
 export function setButtonIcon(button: HTMLElement, icon: string): void {
   setIcon(button, icon);
-  if (!button.childElementCount && icon === "wand-sparkles") setIcon(button, "wand");
+  if (button.childElementCount) return;
+  if (icon === "wand-sparkles") setIcon(button, "wand");
+  if (icon === "square-arrow-out-up-right") setIcon(button, "external-link");
 }
 
 /** The panel under a code block that shows a run's status and output. */

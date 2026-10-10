@@ -11,6 +11,7 @@ import { Editor, editorInfoField, editorLivePreviewField } from "obsidian";
 import { setButtonIcon } from "./output";
 import { fencesField } from "./blocks";
 import { canFormat } from "./format";
+import { canOpen } from "./open";
 import { apply, measure, Placement } from "./place";
 import { canRun } from "./run";
 
@@ -55,13 +56,17 @@ class ActionWidget extends WidgetType {
   }
 }
 
-/** Live Preview: format and run buttons on the first line of every block that supports them. */
-export function liveButtons(format: Action, run: Action) {
+/** Live Preview: the buttons on the first line of every block that supports them. */
+export function liveButtons(format: Action, run: Action, open: Action) {
   const formatButton = Decoration.widget({
     widget: new ActionWidget("wand-sparkles", "Format code", format),
     side: 1,
   });
   const runButton = Decoration.widget({ widget: new ActionWidget("play", "Run code", run), side: 2 });
+  const openButton = Decoration.widget({
+    widget: new ActionWidget("square-arrow-out-up-right", "Open in VS Code", open),
+    side: 3,
+  });
 
   const build = (view: EditorView): DecorationSet => {
     if (!view.state.field(editorLivePreviewField)) return Decoration.none;
@@ -71,6 +76,7 @@ export function liveButtons(format: Action, run: Action) {
       const at = doc.line(fence.open + 1).to;
       if (canFormat(fence.lang)) builder.add(at, at, formatButton);
       if (canRun(fence.lang)) builder.add(at, at, runButton);
+      if (canOpen(fence.lang)) builder.add(at, at, openButton);
     }
     return builder.finish();
   };

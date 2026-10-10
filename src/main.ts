@@ -14,6 +14,7 @@ import { codeEditing, toggleComment } from "./edit";
 import { Fence, parseFences, withPrefix } from "./fence";
 import { canFormat, formatCode } from "./format";
 import { liveButtons, mountOutput, outputAt, outputField } from "./live";
+import { canOpen, openInVsCode } from "./open";
 import { OutputPanel, setButtonIcon } from "./output";
 import { apply, measure } from "./place";
 import { canRun, runCode, RunHandle, RunResult, TIMEOUT_MS } from "./run";
@@ -72,6 +73,11 @@ export default class CodeBlockKitPlugin extends Plugin {
       editorCallback: (editor) => void this.formatAt(editor, editor.getCursor().line),
     });
     this.addCommand({
+      id: "open-code-block-in-vs-code",
+      name: "Open current code block in VS Code",
+      editorCallback: (editor) => void this.openAt(editor, editor.getCursor().line),
+    });
+    this.addCommand({
       id: "run-code-block",
       name: "Run current code block",
       editorCallback: (editor) => this.runAt(editor, editor.getCursor().line),
@@ -85,6 +91,7 @@ export default class CodeBlockKitPlugin extends Plugin {
       liveButtons(
         (editor, line) => this.formatAt(editor, line),
         (editor, line) => this.runAt(editor, line),
+        (editor, line) => this.openAt(editor, line),
       ),
       outputField,
     ]);
@@ -166,6 +173,9 @@ export default class CodeBlockKitPlugin extends Plugin {
             return () => panel.remove();
           });
         });
+      }
+      if (canOpen(lang)) {
+        add("square-arrow-out-up-right", "Open in VS Code", () => void openInVsCode(this, renderedText(code), lang));
       }
       if (!buttons.length) continue;
 
@@ -305,6 +315,17 @@ export default class CodeBlockKitPlugin extends Plugin {
     this.run(fence.code, fence.lang, outputAt(view, below), (panel) =>
       mountOutput(view, below, panel),
     );
+  }
+
+  /** Opens the code block that contains `line` in VS Code. */
+  private async openAt(editor: Editor, line: number): Promise<void> {
+    const fence = this.fenceAt(editor.getValue().split("\n"), line);
+    if (!fence) return;
+    if (!canOpen(fence.lang)) {
+      new Notice(fence.lang ? "Opening code in VS Code needs the desktop app." : "This code block has no language.");
+      return;
+    }
+    await openInVsCode(this, fence.code, fence.lang);
   }
 
   /** Runs `code` into `shown`, the block's panel from an earlier run, or into a new panel. */
