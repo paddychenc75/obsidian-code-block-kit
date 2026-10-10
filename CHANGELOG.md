@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.2
+
+Fixed
+
+- With a theme that puts the Live Preview language label on the left of a code block, the buttons followed it and ended up outside the block. They now stay in the right corner in that case, and still sit beside the label when it is on the right
+
 ## 0.2.1
 
 Changed

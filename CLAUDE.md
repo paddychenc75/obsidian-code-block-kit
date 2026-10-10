@@ -29,7 +29,7 @@ Obsidian plugin that formats and runs fenced code blocks in place.
 - `tsconfig.json` sets `types: []` and `@types/node` is not installed, matching the plugin review's lint run. There, anything typed by Node resolves to `any` and is reported as unsafe.
 - Running code is never automatic. It starts only from a button press or a command.
 - The buttons are hidden until the pointer is on the block (always shown on mobile), because they overlap the first line of code. Live Preview has no `:hover` for a whole block, so `src/live.ts` tracks it and sets `is-shown`.
-- The buttons look the same in Reading view and Live Preview. They are measured against Obsidian's own copy button or language label rather than sharing its classes.
+- The buttons look the same in Reading view and Live Preview. They are measured against Obsidian's own copy button or language label rather than sharing its classes, and always stay on the right: beside that control when the theme has it on the right, in the corner when the theme has moved it to the left.
 - `styles.css` uses Obsidian's variables only, with no `:has()` and no `!important`. All classes are prefixed `cbk-`.
 - No `el.style.*` assignments; use classes or `setCssProps`.
 - Never write to a note from stale positions: Reading view compares the block's lines with the file before writing, and the editor path compares the range before replacing it.

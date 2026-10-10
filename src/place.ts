@@ -8,17 +8,24 @@ export interface Placement {
 }
 
 /**
- * Lines `buttons` up leftwards from `native`, the control Obsidian itself puts in the block's
- * corner (the copy button or the language label), centred on it. Without one they take the corner.
+ * Lines `buttons` up from the right edge of `host`, centred vertically on `native`, the control
+ * Obsidian itself puts on the block (the copy button or the language label).
+ *
+ * Where they start depends on the theme. If `native` is in the right corner they start just left
+ * of it. If the theme has moved it to the left, they take the right corner, at the inset `native`
+ * keeps from its own side.
  */
 export function measure(host: HTMLElement, native: HTMLElement | null, buttons: HTMLElement[]): Placement[] {
   const box = host.getBoundingClientRect();
   if (!box.width) return [];
-  const right = box.left + host.clientLeft + host.clientWidth;
+  const left = box.left + host.clientLeft;
+  const right = left + host.clientWidth;
   const top = box.top + host.clientTop;
   const anchor = native?.offsetWidth ? native.getBoundingClientRect() : null;
+  const onRight = anchor ? anchor.left + anchor.width / 2 > (left + right) / 2 : false;
 
-  let end = anchor ? right - anchor.left + GAP : INSET;
+  let end = INSET;
+  if (anchor) end = onRight ? right - anchor.left + GAP : Math.max(anchor.left - left, 0);
   return buttons.map((button) => {
     const size = button.getBoundingClientRect();
     const placement = {

@@ -79,8 +79,8 @@ export function liveButtons(format: Action, run: Action) {
     class {
       decorations: DecorationSet;
 
-      // The language label comes and goes with the cursor and its width depends on the
-      // language name, so the buttons are lined up against it again after every update.
+      // The language label comes and goes with the cursor, and themes put it on either side,
+      // so the buttons are measured against it again after every update.
       private place = {
         key: this,
         read: (view: EditorView): Placement[] => {
