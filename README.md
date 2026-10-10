@@ -2,7 +2,7 @@
 
 Format and run fenced code blocks in [Obsidian](https://obsidian.md) without leaving the note.
 
-Each code block gets a format button and a run button, beside the copy button in Reading view and beside the language label in Live Preview. In Reading view the copy button stays visible on those blocks instead of appearing on hover. Two commands do the same from the keyboard, including in Source mode:
+Each code block gets a format button and a run button, beside the copy button in Reading view and beside the language label in Live Preview. The buttons appear when the pointer is on the block, so they stay out of the way of the code; on touch screens they are always shown. Two commands do the same from the keyboard, including in Source mode:
 
 - **Format current code block**
 - **Run current code block**

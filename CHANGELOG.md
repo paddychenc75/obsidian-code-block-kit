@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.1
+
+Changed
+
+- The format and run buttons appear only while the pointer is on the block, and have an opaque background, so they no longer sit on top of a long first line. On touch screens they are always shown
+- Reading view no longer forces the copy button to stay visible; it is back to the theme's own behaviour
+
 ## 0.2.0
 
 Running code no longer starts anything outside Obsidian.

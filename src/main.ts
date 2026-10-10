@@ -88,7 +88,6 @@ export default class CodeBlockKitPlugin extends Plugin {
     for (const session of Array.from(this.sessions.values())) session.close();
     this.app.workspace.iterateAllLeaves((leaf) => {
       leaf.view.containerEl.querySelectorAll(".cbk-button").forEach((button) => button.remove());
-      leaf.view.containerEl.querySelectorAll(".cbk-block").forEach((pre) => pre.removeClass("cbk-block"));
     });
   }
 
@@ -132,8 +131,6 @@ export default class CodeBlockKitPlugin extends Plugin {
       }
       if (!buttons.length) continue;
 
-      // Obsidian only shows the copy button on hover, which would leave a gap beside ours.
-      pre.addClass("cbk-block");
       this.shown.observe(pre);
       this.resized.observe(pre);
       pre.addEventListener("pointerenter", () => this.place(pre));

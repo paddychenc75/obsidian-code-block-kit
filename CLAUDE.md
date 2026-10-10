@@ -28,6 +28,7 @@ Obsidian plugin that formats and runs fenced code blocks in place.
 - The worker is not a security boundary: desktop Obsidian gives workers Node. Never describe it as a sandbox in the README or UI.
 - `tsconfig.json` sets `types: []` and `@types/node` is not installed, matching the plugin review's lint run. There, anything typed by Node resolves to `any` and is reported as unsafe.
 - Running code is never automatic. It starts only from a button press or a command.
+- The buttons are hidden until the pointer is on the block (always shown on mobile), because they overlap the first line of code. Live Preview has no `:hover` for a whole block, so `src/live.ts` tracks it and sets `is-shown`.
 - The buttons look the same in Reading view and Live Preview. They are measured against Obsidian's own copy button or language label rather than sharing its classes.
 - `styles.css` uses Obsidian's variables only, with no `:has()` and no `!important`. All classes are prefixed `cbk-`.
 - No `el.style.*` assignments; use classes or `setCssProps`.

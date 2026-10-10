@@ -7,24 +7,30 @@
   right: var(--cbk-end, 6px);
   z-index: 1;
   padding: var(--size-2-2);
+  /* Opaque, so code that runs underneath is covered cleanly instead of showing through. */
+  background-color: var(--code-background);
   color: var(--text-faint);
+  /* Hidden until the pointer is on the block, so the buttons don't sit on top of the code. */
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+
+/* .is-shown is set in Live Preview, where a block is many sibling lines and has no :hover. */
+pre:hover > .cbk-button.clickable-icon,
+.cbk-button.clickable-icon.is-shown,
+.cbk-button.clickable-icon:focus-visible,
+.is-mobile .cbk-button.clickable-icon {
+  opacity: 1;
 }
 
 .cbk-button.clickable-icon:hover {
+  background-color: var(--background-modifier-hover);
   color: var(--text-normal);
 }
 
-.cbk-button.is-busy {
+.cbk-button.clickable-icon.is-busy {
   opacity: 0.5;
   cursor: progress;
-}
-
-/* Reading view: keep the copy button on screen beside ours, as the language label is in Live
-   Preview. The class is doubled to outrank the hover rule whatever order the sheets load in. */
-@media screen {
-  .markdown-rendered pre.cbk-block.cbk-block > button.copy-code-button {
-    display: inline-flex;
-  }
 }
 
 @media print {
