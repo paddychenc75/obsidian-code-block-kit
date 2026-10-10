@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.3
+
+Changed
+
+- The format and run buttons are always visible again, rather than only while the pointer is on the block. In Reading view the copy button stays visible beside them
+
 ## 0.2.2
 
 Fixed

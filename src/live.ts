@@ -95,35 +95,8 @@ export function liveButtons(format: Action, run: Action) {
             measure(line, line.querySelector<HTMLElement>(".code-block-flair"), buttons),
           );
         },
-        write: (placements: Placement[]) => {
-          apply(placements);
-          // Lines are redrawn as the note changes, which makes new buttons.
-          this.show(this.hovered);
-        },
+        write: apply,
       };
-
-      /** First line of the block the pointer is on. */
-      private hovered: Element | null = null;
-
-      /** Shows the buttons of the block that starts at `begin` and hides the previous block's. */
-      private show(begin: Element | null): void {
-        if (begin !== this.hovered) {
-          this.hovered?.querySelectorAll(":scope > .cbk-button").forEach((button) => button.removeClass("is-shown"));
-        }
-        this.hovered = begin?.isConnected ? begin : null;
-        this.hovered?.querySelectorAll(":scope > .cbk-button").forEach((button) => button.addClass("is-shown"));
-      }
-
-      /** A block is a run of sibling lines, so walk back from the hovered one to its first. */
-      hover(target: EventTarget | null): void {
-        const element = target instanceof Node && target.instanceOf(Element) ? target : null;
-        let line = element?.closest(".cm-line.HyperMD-codeblock") ?? null;
-        while (line && !line.hasClass("HyperMD-codeblock-begin")) {
-          const before: Element | null = line.previousElementSibling;
-          line = before?.hasClass("HyperMD-codeblock") ? before : null;
-        }
-        this.show(line);
-      }
 
       constructor(view: EditorView) {
         this.decorations = build(view);
@@ -138,17 +111,7 @@ export function liveButtons(format: Action, run: Action) {
         update.view.requestMeasure(this.place);
       }
     },
-    {
-      decorations: (plugin) => plugin.decorations,
-      eventHandlers: {
-        mousemove(event) {
-          this.hover(event.target);
-        },
-        mouseleave() {
-          this.hover(null);
-        },
-      },
-    },
+    { decorations: (plugin) => plugin.decorations },
   );
 }
 
