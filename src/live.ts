@@ -9,7 +9,7 @@ import {
 } from "@codemirror/view";
 import { Editor, editorInfoField, editorLivePreviewField } from "obsidian";
 import { setButtonIcon } from "./output";
-import { parseFences } from "./fence";
+import { fencesField } from "./blocks";
 import { canFormat } from "./format";
 import { apply, measure, Placement } from "./place";
 import { canRun } from "./run";
@@ -67,7 +67,7 @@ export function liveButtons(format: Action, run: Action) {
     if (!view.state.field(editorLivePreviewField)) return Decoration.none;
     const builder = new RangeSetBuilder<Decoration>();
     const doc = view.state.doc;
-    for (const fence of parseFences(doc.toJSON())) {
+    for (const fence of view.state.field(fencesField)) {
       const at = doc.line(fence.open + 1).to;
       if (canFormat(fence.lang)) builder.add(at, at, formatButton);
       if (canRun(fence.lang)) builder.add(at, at, runButton);

@@ -1,11 +1,28 @@
 # Code Block Kit
 
-Format and run fenced code blocks in [Obsidian](https://obsidian.md) without leaving the note.
+Format, run, and edit fenced code blocks in [Obsidian](https://obsidian.md) without leaving the note.
 
 Each code block gets a format button and a run button, beside the copy button in Reading view and beside the language label in Live Preview. They are always visible, and in Reading view the copy button stays visible beside them instead of appearing on hover. Two commands do the same from the keyboard, including in Source mode:
 
 - **Format current code block**
 - **Run current code block**
+
+## Edit
+
+While the cursor is inside a code block in the editor:
+
+| Key | What it does |
+| --- | --- |
+| `Enter` | Keeps the indentation, adds a level after `{`, `[`, `(` (and `:` in Python and YAML), and splits a bracket pair onto three lines |
+| `Tab` / `Shift+Tab` | Indents or outdents the selected lines, using the indentation the block already has |
+| `}` `]` `)` | Typed on an empty line, steps back one level |
+| Toggle comment (`Ctrl/Cmd+/`) | Comments in the block's language: `//`, `#`, `--`, `/* */`, or `<!-- -->` |
+
+The first syntax error in a block is underlined, with the message on hover, for the languages listed under Format.
+
+Blocks inside lists and callouts work the same way: the list indentation and `>` markers are kept on every new line.
+
+Toggle comment works by wrapping Obsidian's own **Toggle comment** command, so it follows whatever hotkey you gave that command. Outside code blocks, and in languages the plugin has no comment syntax for, the command behaves as it always did.
 
 ## Format
 
@@ -58,7 +75,7 @@ npm install
 npm run dev     # watch build
 npm run build   # typecheck and bundle to main.js
 npm run check   # typecheck, lint, and validate manifest, versions, changelog, and CSS
-npm test        # fence parsing and formatter tests
+npm test        # fence parsing, formatter, and editing tests
 ```
 
 Requires Node.js 22.18 or newer. Edit TypeScript under `src/`; `main.js` is build output and is not tracked.

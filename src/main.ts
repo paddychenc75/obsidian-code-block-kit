@@ -1,5 +1,7 @@
 import type { EditorView } from "@codemirror/view";
 import {
+  App,
+  Command,
   Editor,
   MarkdownPostProcessorContext,
   MarkdownView,
@@ -7,6 +9,8 @@ import {
   Plugin,
   TFile,
 } from "obsidian";
+import { fencesField } from "./blocks";
+import { codeEditing, toggleComment } from "./edit";
 import { Fence, parseFences, withPrefix } from "./fence";
 import { canFormat, formatCode } from "./format";
 import { liveButtons, mountOutput, outputAt, outputField } from "./live";
@@ -73,13 +77,46 @@ export default class CodeBlockKitPlugin extends Plugin {
       editorCallback: (editor) => this.runAt(editor, editor.getCursor().line),
     });
 
+    this.takeOverCommentCommand();
+
     this.registerEditorExtension([
+      fencesField,
+      codeEditing,
       liveButtons(
         (editor, line) => this.formatAt(editor, line),
         (editor, line) => this.runAt(editor, line),
       ),
       outputField,
     ]);
+  }
+
+  /**
+   * Obsidian's "Toggle comment" command owns its hotkey and handles it before the editor sees
+   * the key, so inside a code block it would wrap the line in Markdown's `%%`. The command is
+   * wrapped to comment in the block's language there, and to behave as before everywhere else.
+   *
+   * The command registry is not part of the public API. If it is missing or shaped differently,
+   * nothing is changed.
+   */
+  private takeOverCommentCommand(): void {
+    const registry = (this.app as App & { commands?: { commands?: Record<string, Command> } }).commands;
+    const command = registry?.commands?.["editor:toggle-comments"];
+    const original = command?.checkCallback;
+    if (!command || !original) return;
+
+    const wrapped = (checking: boolean): boolean | void => {
+      const editor = this.app.workspace.activeEditor?.editor;
+      const view = editor ? (editor as Editor & { cm?: EditorView }).cm : undefined;
+      if (view?.hasFocus && toggleComment(view, true)) {
+        if (!checking) toggleComment(view);
+        return true;
+      }
+      return original.call(command, checking);
+    };
+    command.checkCallback = wrapped;
+    this.register(() => {
+      if (command.checkCallback === wrapped) command.checkCallback = original;
+    });
   }
 
   onunload(): void {

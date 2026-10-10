@@ -91,7 +91,7 @@ const ownClasses = [...stylesWithoutComments.matchAll(/\.(cbk-[a-z0-9-]+)/g)].le
 if (ownClasses === 0) fail("styles.css defines no cbk-* classes");
 
 // The plugin uses no Node built-ins: code runs in a Web Worker and formatting is pure JavaScript.
-for (const file of ["src/main.ts", "src/live.ts", "src/output.ts", "src/place.ts", "src/fence.ts", "src/format.ts", "src/run.ts"]) {
+for (const file of ["src/main.ts", "src/live.ts", "src/blocks.ts", "src/edit.ts", "src/output.ts", "src/place.ts", "src/fence.ts", "src/format.ts", "src/run.ts"]) {
   if (!existsSync(resolve(root, file))) continue;
   const source = read(file);
   const builtin = source.match(/(?:from |import\(|require\()"(?:node:)?(child_process|fs|os|path|electron)"/);

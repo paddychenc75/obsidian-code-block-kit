@@ -17,7 +17,9 @@
       "ES2021",
       "DOM"
     ],
-    "types": []
+    "types": [],
+    "noEmit": true,
+    "allowImportingTsExtensions": true
   },
   "include": [
     "src/**/*.ts"

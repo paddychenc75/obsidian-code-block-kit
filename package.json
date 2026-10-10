@@ -1,8 +1,8 @@
 {
   "name": "obsidian-code-block-kit",
-  "version": "0.2.3",
+  "version": "0.3.0",
   "private": true,
-  "description": "Code Block Kit — format and run Obsidian code blocks",
+  "description": "Code Block Kit — format, run, and edit Obsidian code blocks",
   "main": "main.js",
   "type": "module",
   "scripts": {
@@ -23,6 +23,7 @@
     "node": ">=22.18"
   },
   "devDependencies": {
+    "@codemirror/lint": "^6.9.7",
     "@codemirror/state": "^6.7.6",
     "@codemirror/view": "^6.43.13",
     "@eslint/js": "^9.39.5",

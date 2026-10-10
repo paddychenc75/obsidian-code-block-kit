@@ -74,3 +74,33 @@ export async function formatCode(code: string, lang: string): Promise<string> {
   });
   return formatted.replace(/\n+$/, "");
 }
+
+export interface SyntaxError {
+  /** 1-based, within the code. */
+  line: number;
+  column: number;
+  message: string;
+}
+
+const checked = new Map<string, SyntaxError | null>();
+
+/** The first syntax error in `code`, or null. Results are kept, since most blocks rarely change. */
+export async function syntaxError(code: string, lang: string): Promise<SyntaxError | null> {
+  const key = `${lang}\0${code}`;
+  const known = checked.get(key);
+  if (known !== undefined) return known;
+
+  let result: SyntaxError | null = null;
+  try {
+    await formatCode(code, lang);
+  } catch (error) {
+    const start = (error as { loc?: { start?: { line?: number; column?: number } } }).loc?.start;
+    if (start?.line) {
+      const message = (error instanceof Error ? error.message : String(error)).split("\n")[0] ?? "";
+      result = { line: start.line, column: start.column ?? 1, message: message.replace(/\s*\(\d+:\d+\)$/, "") };
+    }
+  }
+  if (checked.size >= 200) checked.clear();
+  checked.set(key, result);
+  return result;
+}

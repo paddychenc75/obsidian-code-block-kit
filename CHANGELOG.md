@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.3.0
+
+Editing code inside a block now behaves more like a code editor. All of it applies only while the cursor is in a code block.
+
+Added
+
+- `Enter` keeps the line's indentation, adds a level after `{`, `[`, or `(` (and after `:` in Python and YAML), and puts the closing bracket on its own line when the cursor is between a pair
+- `Tab` and `Shift+Tab` indent and outdent the selected lines by the block's own indentation, instead of acting on the list or callout around the block
+- A closing bracket typed on an empty line steps back one level
+- **Toggle comment** (`Ctrl/Cmd+/`) comments in the block's language, such as `//`, `#`, `--`, `/* */`, or `<!-- -->`, instead of wrapping the line in `%%`
+- The first syntax error in a block is underlined, with the message on hover, for every language the formatter supports
+
 ## 0.2.3
 
 Changed
