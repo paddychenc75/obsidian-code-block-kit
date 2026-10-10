@@ -1,6 +1,6 @@
 {
   "name": "obsidian-code-block-kit",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "private": true,
   "description": "Code Block Kit — format, run, and edit Obsidian code blocks",
   "main": "main.js",

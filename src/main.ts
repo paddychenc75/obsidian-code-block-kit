@@ -14,7 +14,7 @@ import { codeEditing, toggleComment } from "./edit";
 import { Fence, parseFences, withPrefix } from "./fence";
 import { canFormat, formatCode } from "./format";
 import { liveButtons, mountOutput, outputAt, outputField } from "./live";
-import { canOpen, openInVsCode } from "./open";
+import { canOpen, openInVsCode, registerVsCodeIcon, VS_CODE_ICON } from "./open";
 import { OutputPanel, setButtonIcon } from "./output";
 import { apply, measure } from "./place";
 import { canRun, runCode, RunHandle, RunResult, TIMEOUT_MS } from "./run";
@@ -65,6 +65,7 @@ export default class CodeBlockKitPlugin extends Plugin {
   });
 
   onload(): void {
+    registerVsCodeIcon();
     this.registerMarkdownPostProcessor((el, ctx) => this.decorate(el, ctx));
 
     this.addCommand({
@@ -175,7 +176,7 @@ export default class CodeBlockKitPlugin extends Plugin {
         });
       }
       if (canOpen(lang)) {
-        add("square-arrow-out-up-right", "Open in VS Code", () => void openInVsCode(this, renderedText(code), lang));
+        add(VS_CODE_ICON, "Open in VS Code", () => void openInVsCode(this, renderedText(code), lang));
       }
       if (!buttons.length) continue;
 

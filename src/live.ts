@@ -11,7 +11,7 @@ import { Editor, editorInfoField, editorLivePreviewField } from "obsidian";
 import { setButtonIcon } from "./output";
 import { fencesField } from "./blocks";
 import { canFormat } from "./format";
-import { canOpen } from "./open";
+import { canOpen, VS_CODE_ICON } from "./open";
 import { apply, measure, Placement } from "./place";
 import { canRun } from "./run";
 
@@ -64,7 +64,7 @@ export function liveButtons(format: Action, run: Action, open: Action) {
   });
   const runButton = Decoration.widget({ widget: new ActionWidget("play", "Run code", run), side: 2 });
   const openButton = Decoration.widget({
-    widget: new ActionWidget("square-arrow-out-up-right", "Open in VS Code", open),
+    widget: new ActionWidget(VS_CODE_ICON, "Open in VS Code", open),
     side: 3,
   });
 

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.1
+
+Changed
+
+- The Open in VS Code button shows the VS Code mark instead of a generic open-externally arrow
+
 ## 0.4.0
 
 Added

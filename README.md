@@ -93,3 +93,5 @@ Requires Node.js 22.18 or newer. Edit TypeScript under `src/`; `main.js` is buil
 ## License
 
 [MIT](LICENSE)
+
+The VS Code mark on the Open in VS Code button comes from [Simple Icons](https://simpleicons.org) (CC0). Visual Studio Code is a trademark of Microsoft; this plugin is not affiliated with or endorsed by Microsoft.
